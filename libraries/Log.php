@@ -375,7 +375,7 @@ class Log
     
         if ($this->_severityThreshold >= $severity) {
             $status = $this->_getTimeLine($severity);
-            $this->writeFreeFormLine("$status $line \n");
+            $this->writeFreeFormLine("[LOG] $status $line".PHP_EOL);
         }
         
         # For when we want to echo the results
