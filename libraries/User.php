@@ -9,6 +9,7 @@ class User {
 	public $email_template;
 	
 	private $token;
+	private $roles;
 	
 	public function __construct($users_table = 'users') {
 		
@@ -16,7 +17,9 @@ class User {
 		if(isset($_COOKIE['token'])) {
 			$this->token = $_COOKIE['token'];
 		}
-		
+		if(isset($_COOKIE['roles'])) {
+		 $this->roles = unserialize($_COOKIE['roles']);
+		}
 		$this->users_table = $users_table;
 	
 		$this->email_template = View::instance('_v_email');		
@@ -38,7 +41,34 @@ class User {
 
 	}
 
-		
+	public function get_roles() {
+ 	 # If we have cookie token, load that user
+ 	 if(!empty($this->roles)) {
+ 	  return $this->__load_roles();
+ 	 }
+ 	 
+ 	 # Otherwise, return false, the don't have any roles
+ 	 return false;
+	}
+	
+	public function __load_roles() {
+	 # Retreive from cache, reduce DB calls
+	 if (isset($this->_user)) {
+	 
+	  # Load user from DB
+	  $q = 'SELECT role_types_role_type_id, 
+	               user_role_id
+              FROM users
+        INNER JOIN users_roles
+                ON users_user_id = user_id
+             WHERE email = "'. $this->_user->email . '"';
+	  
+      $this->roles = DB::instance ( DB_NAME )->select_kv ( $q, 'role_types_role_type_id', 'user_role_id' );
+	 }
+	 
+	 # Done
+	 return $this->roles;
+	}
 	/*-------------------------------------------------------------------------------------------------
 	
 	-------------------------------------------------------------------------------------------------*/
